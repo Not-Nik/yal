@@ -1,10 +1,4 @@
-//
-//  logger.hpp
-//  CCord
-//
-//  Created by Nik Wipper on 09.05.19.
-//  Copyright © 2019 Nikolas Wipper. All rights reserved.
-//
+// yal (c) Nikolas Wipper 2020
 
 #ifndef LOGGER_H
 #define LOGGER_H
