@@ -5,6 +5,7 @@
 
 #include <string>
 #include <chrono>
+#include <utility>
 #include <vector>
 #include <iostream>
 
@@ -94,7 +95,7 @@ namespace log
         std::string getName();
     };
 
-    Logger::Logger(std::string n) : name(n)
+    Logger::Logger(std::string n) : name(std::move(n))
     {
     }
 
