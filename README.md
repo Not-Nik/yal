@@ -21,7 +21,7 @@ This expects you to have this project in a subdirectory in your project
 cmake_minimum_required(VERSION 3.15)
 project(MyProject)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17) # needed for inline variable
 
 add_subdirectory(yal)
 
@@ -34,10 +34,10 @@ SRCS = src/main.cpp
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
 
 MyExecutable: $(OBJS)
-	gcc -o $@ $^
+	g++ -o $@ $^
 
 %.o: %.c
-	gcc -Iyal/ -c -o $@ $^
+	g++ -std=c++17 -Iyal/ -c -o $@ $^
 
 clean:
 	rm $(OBJS)

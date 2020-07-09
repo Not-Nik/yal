@@ -22,7 +22,7 @@ namespace log
 
     class Logger
     {
-        static std::vector<Logger *> loggers;
+        static inline std::vector<Logger *> loggers;
 
         std::string name;
         std::string layout = "[%l] %h:%m:%s - %p:%c (%f) - %i";
@@ -182,8 +182,6 @@ namespace log
         }
         return false;
     }
-
-    std::vector<Logger *> Logger::loggers = std::vector<Logger *>();
 }
 
 #endif /*LOGGER_H*/
