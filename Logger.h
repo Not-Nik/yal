@@ -29,15 +29,15 @@ namespace log
         LOGGING_TYPE currentType = INFO;
     public:
         /// Default constructor
-        explicit Logger(std::string n);
+        inline explicit Logger(std::string n);
 
         /// Dynamic constructor
-        static Logger * getLogger(const std::string & name);
+        static inline Logger * getLogger(const std::string & name);
 
-        static bool deleteLogger(const std::string & name);
+        static inline bool deleteLogger(const std::string & name);
 
         /// Display message formatted with layout if current level is equals or larger than type
-        void log(
+        inline void log(
                 LOGGING_TYPE type,
                 const std::string & message,
                 const std::string & file = __builtin_FILE(),
@@ -86,13 +86,13 @@ namespace log
          * - s (Second): shows the current second
          * i (Information): shows the actual message
          */
-        void setLayout(std::string newLayout);
+        inline void setLayout(std::string newLayout);
 
         /// Set the logging type to type. It is used to determine which messages are shown and which don't.
-        void setLoggingType(LOGGING_TYPE type);
+        inline void setLoggingType(LOGGING_TYPE type);
 
         /// Get the name of this logger
-        std::string getName();
+        inline std::string getName();
     };
 
     Logger::Logger(std::string n) : name(std::move(n))
