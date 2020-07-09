@@ -8,38 +8,54 @@
 #include <vector>
 #include <iostream>
 
+#ifndef __GNUC__
+#warning "This library requires built-in functions from GCC to properly display filename and line without you setting it explicitly"
+#endif
+
 namespace log
 {
-    typedef enum { ERROR, WARNING, INFO, DEBUG } LOGGING_TYPE;
+    typedef enum
+    {
+        ERROR, WARNING, INFO, DEBUG
+    } LOGGING_TYPE;
 
     class Logger
     {
         static std::vector<Logger *> loggers;
 
         std::string name;
-        std::string layout = "[%l] %h:%m:%s: %i";
+        std::string layout = "[%l] %h:%m:%s - %f:%c - %i";
         LOGGING_TYPE currentType = INFO;
     public:
         /// Default constructor
-        explicit Logger(std::string name);
+        explicit Logger(std::string n);
 
         /// Dynamic constructor
         static Logger * getLogger(const std::string & name);
-        static bool  deleteLogger(const std::string & name);
+        static bool deleteLogger(const std::string & name);
 
         /// Display message formatted with layout if current level is equals or larger than type
-        void log(LOGGING_TYPE type, const std::string & message);
+        void log(LOGGING_TYPE type, const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE());
 
         // Functions wrapping the log() function
-        void error(const std::string & message)   { this->log(ERROR,   message); }
-        void warning(const std::string & message) { this->log(WARNING, message); }
-        void info(const std::string & message)    { this->log(INFO,    message); }
-        void debug(const std::string & message)   { this->log(DEBUG,   message); }
+        void error(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
+        { this->log(ERROR, message, file, line); }
+
+        void warning(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
+        { this->log(WARNING, message, file, line); }
+
+        void info(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
+        { this->log(INFO, message, file, line); }
+
+        void debug(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
+        { this->log(DEBUG, message, file, line); }
 
         /**
          * Set layout to a string. You can use certain codes to show different information.
          * All codes have to be marked with a '%':
          * l (Level): shows the level of the message (see LOGGING_TYPE)
+         * f (File): shows the filename
+         * c (Column): shows the line
          * Time:
          * - h (Hour): shows the current hour
          * - m (Minute): shows the current minute
@@ -55,12 +71,11 @@ namespace log
         std::string getName();
     };
 
-    Logger::Logger(std::string name)
+    Logger::Logger(std::string n) : name(n)
     {
-        this->name = std::move(name);
     }
 
-    void Logger::log(LOGGING_TYPE type, const std::string & message)
+    void Logger::log(LOGGING_TYPE type, const std::string & message, const std::string & file, int line)
     {
         if (type > this->currentType)
             return;
@@ -80,6 +95,8 @@ namespace log
                 else if (*fmt == 'm') std::cout << time->tm_min;
                 else if (*fmt == 's') std::cout << time->tm_sec;
                 else if (*fmt == 'i') std::cout << message;
+                else if (*fmt == 'f') std::cout << file;
+                else if (*fmt == 'c') std::cout << line;
                 else if (*fmt == 'l')
                 {
                     if (type == ERROR)        std::cout << "ERROR";
@@ -88,7 +105,9 @@ namespace log
                     else if (type == DEBUG)   std::cout << "DEBUG";
                 }
                 else if (*fmt == '%') std::cout << "%";
-            } else {
+            }
+            else
+            {
                 if (*fmt != '\0') std::cout << *fmt;
                 else              break;
             }
