@@ -24,7 +24,7 @@ namespace log
         static std::vector<Logger *> loggers;
 
         std::string name;
-        std::string layout = "[%l] %h:%m:%s - %f:%c - %i";
+        std::string layout = "[%l] %h:%m:%s - %p:%c (%f) - %i";
         LOGGING_TYPE currentType = INFO;
     public:
         /// Default constructor
@@ -32,30 +32,53 @@ namespace log
 
         /// Dynamic constructor
         static Logger * getLogger(const std::string & name);
+
         static bool deleteLogger(const std::string & name);
 
         /// Display message formatted with layout if current level is equals or larger than type
-        void log(LOGGING_TYPE type, const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE());
+        void log(
+                LOGGING_TYPE type,
+                const std::string & message,
+                const std::string & file = __builtin_FILE(),
+                int line = __builtin_LINE(),
+                const std::string & function = __builtin_FUNCTION());
 
         // Functions wrapping the log() function
-        void error(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
-        { this->log(ERROR, message, file, line); }
+        void error(
+                const std::string & message,
+                const std::string & file = __builtin_FILE(),
+                int line = __builtin_LINE(),
+                const std::string & function = __builtin_FUNCTION())
+        { this->log(ERROR, message, file, line, function); }
 
-        void warning(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
-        { this->log(WARNING, message, file, line); }
+        void warning(
+                const std::string & message,
+                const std::string & file = __builtin_FILE(),
+                int line = __builtin_LINE(),
+                const std::string & function = __builtin_FUNCTION())
+        { this->log(WARNING, message, file, line, function); }
 
-        void info(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
-        { this->log(INFO, message, file, line); }
+        void info(
+                const std::string & message,
+                const std::string & file = __builtin_FILE(),
+                int line = __builtin_LINE(),
+                const std::string & function = __builtin_FUNCTION())
+        { this->log(INFO, message, file, line, function); }
 
-        void debug(const std::string & message, const std::string & file = __builtin_FILE(), int line = __builtin_LINE())
-        { this->log(DEBUG, message, file, line); }
+        void debug(
+                const std::string & message,
+                const std::string & file = __builtin_FILE(),
+                int line = __builtin_LINE(),
+                const std::string & function = __builtin_FUNCTION())
+        { this->log(DEBUG, message, file, line, function); }
 
         /**
          * Set layout to a string. You can use certain codes to show different information.
          * All codes have to be marked with a '%':
          * l (Level): shows the level of the message (see LOGGING_TYPE)
-         * f (File): shows the filename
+         * p (Path): shows the file path
          * c (Column): shows the line
+         * f (Function): shows the function name
          * Time:
          * - h (Hour): shows the current hour
          * - m (Minute): shows the current minute
@@ -75,7 +98,7 @@ namespace log
     {
     }
 
-    void Logger::log(LOGGING_TYPE type, const std::string & message, const std::string & file, int line)
+    void Logger::log(LOGGING_TYPE type, const std::string & message, const std::string & file, int line, const std::string & function)
     {
         if (type > this->currentType)
             return;
@@ -95,8 +118,9 @@ namespace log
                 else if (*fmt == 'm') std::cout << time->tm_min;
                 else if (*fmt == 's') std::cout << time->tm_sec;
                 else if (*fmt == 'i') std::cout << message;
-                else if (*fmt == 'f') std::cout << file;
+                else if (*fmt == 'p') std::cout << file;
                 else if (*fmt == 'c') std::cout << line;
+                else if (*fmt == 'f') std::cout << function;
                 else if (*fmt == 'l')
                 {
                     if (type == ERROR)        std::cout << "ERROR";
