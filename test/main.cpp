@@ -4,13 +4,12 @@
 
 using namespace log;
 
-int main()
-{
-    Logger * logger = Logger::getLogger("myLogger");
-    logger->setLoggingType(DEBUG);
-    logger->debug("Debug");
-    logger->info("Info");
-    logger->warning("Warning");
-    logger->error("Error");
-    Logger::deleteLogger("myLogger");
+int main() {
+    Logger *logger = Logger::GetLogger("MyLogger");
+    logger->SetLoggingType(DEBUG);
+    logger->Debug("Debug");
+    logger->Info("Info");
+    logger->Warning("Warning");
+    logger->Error("Error");
+    Logger::DeleteLogger("MyLogger");
 }
