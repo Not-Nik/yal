@@ -120,9 +120,9 @@ void Logger::Log(LOGGING_TYPE type, const std::string &message, const std::strin
     while (fmt) {
         if (*fmt == '%') {
             fmt++;
-            if (*fmt == 'h') std::cout << time->tm_hour;
-            else if (*fmt == 'm') std::cout << time->tm_min;
-            else if (*fmt == 's') std::cout << time->tm_sec;
+            if (*fmt == 'h') std::cout << std::setw(2) << std::setfill('0') << time->tm_hour;
+            else if (*fmt == 'm') std::cout << std::setw(2) << std::setfill('0') << time->tm_min;
+            else if (*fmt == 's') std::cout << std::setw(2) << std::setfill('0') << time->tm_sec;
             else if (*fmt == 'i') std::cout << message;
             else if (*fmt == 'p') std::cout << file;
             else if (*fmt == 'c') std::cout << line;
