@@ -11,10 +11,14 @@
 #include <filesystem>
 
 #ifndef __GNUC__
+#ifdef _MSC_VER
+#pragma message ("This library requires built-in functions from GCC to properly display filename and line without you setting it explicitly")
+#else
 #warning "This library requires built-in functions from GCC to properly display filename and line without you setting it explicitly"
 #endif
+#endif
 
-namespace log {
+namespace logging {
 typedef enum {
     ERROR, WARNING, INFO, DEBUG
 } LOGGING_TYPE;
@@ -176,6 +180,6 @@ bool Logger::DeleteLogger(const std::string &name) {
     }
     return false;
 }
-}
+} // logging
 
 #endif /*LOGGER_H*/

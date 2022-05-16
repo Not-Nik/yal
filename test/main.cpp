@@ -2,7 +2,7 @@
 
 #include <Logger.h>
 
-using namespace log;
+using namespace logging;
 
 int main() {
     Logger *logger = Logger::GetLogger("MyLogger");
