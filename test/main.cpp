@@ -1,6 +1,6 @@
 // yal (c) Nikolas Wipper 2020
 
-#include <Logger.h>
+#include <log/log.h>
 
 using namespace logging;
 
@@ -11,5 +11,5 @@ int main() {
     logger->Info("Info");
     logger->Warning("Warning");
     logger->Error("Error");
-    Logger::DeleteLogger("MyLogger");
+    //Logger::DeleteLogger("MyLogger");
 }

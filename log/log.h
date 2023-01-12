@@ -3,6 +3,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <map>
 #include <string>
 #include <chrono>
 #include <utility>
@@ -18,21 +19,20 @@
 #endif
 #endif
 
+#ifdef SINGLE_LOGGER
+#define DYN_STATIC static inline
+#else
+#define DYN_STATIC
+#endif
+
 namespace logging {
 typedef enum {
-    NONE, ERROR, WARNING, INFO, DEBUG
+    NONE, ERROR, WARNING, INFO, DEBUG, ALL
 } LOGGING_TYPE;
 
 // This is very naive, but seems to work fine
 [[maybe_unused]] constexpr std::string_view MakeRelative(std::string_view path) {
-    std::string_view current = __builtin_FILE(), res;
-    std::string_view::value_type separator = 0;
-    for (auto el : path) {
-        if (el == '/' || el == '\\') {
-            separator = el;
-            break;
-        }
-    }
+    std::string_view current = __builtin_FILE();
 
     size_t i = 0, size = std::min(current.size(), path.size());
     for (; i < size; i++) {
@@ -42,47 +42,56 @@ typedef enum {
 }
 
 class Logger {
-    static inline std::vector<Logger *> loggers;
+    static inline std::unordered_map<std::string, Logger *> loggers;
 
-    std::string name;
-    std::string layout = "[%l] %n: %h:%m:%s - %p:%c (%f) - %i";
-    LOGGING_TYPE currentType = INFO;
+    DYN_STATIC std::string name;
+    DYN_STATIC std::string layout = "[%l] %n: %h:%m:%s - %p:%c (%f) - %i";
+    DYN_STATIC LOGGING_TYPE currentType = INFO;
 public:
+    #ifndef SINGLE_LOGGER
     /// Default constructor
-    inline explicit Logger(std::string n);
+    explicit Logger(std::string n)
+        : name(std::move(n)) {}
 
     /// Dynamic constructor
-    static inline Logger *GetLogger(const std::string &name);
-
-    static inline bool DeleteLogger(const std::string &name);
+    static Logger *GetLogger(const std::string &name);
+    #endif
 
     /// Display message formatted with layout if current level is equals or larger than type
-    inline void Log(LOGGING_TYPE type,
-                    const std::string &message,
-                    const std::string_view &file = MakeRelative(__builtin_FILE()),
-                    int line = __builtin_LINE(),
-                    const std::string &function = __builtin_FUNCTION());
+    DYN_STATIC void Log(LOGGING_TYPE type,
+                        const std::string &message,
+                        const std::string_view &file = MakeRelative(__builtin_FILE()),
+                        int line = __builtin_LINE(),
+                        const std::string &function = __builtin_FUNCTION());
 
     // Functions wrapping the log() function
-    void Error(const std::string &message,
-               const std::string_view &file = MakeRelative(__builtin_FILE()),
-               int line = __builtin_LINE(),
-               const std::string &function = __builtin_FUNCTION()) { this->Log(ERROR, message, file, line, function); }
+    DYN_STATIC void Error(const std::string &message,
+                          const std::string_view &file = MakeRelative(__builtin_FILE()),
+                          int line = __builtin_LINE(),
+                          const std::string &function = __builtin_FUNCTION()) {
+        Log(ERROR, message, file, line, function);
+    }
 
-    void Warning(const std::string &message,
-                 const std::string_view &file = MakeRelative(__builtin_FILE()),
-                 int line = __builtin_LINE(),
-                 const std::string &function = __builtin_FUNCTION()) { this->Log(WARNING, message, file, line, function); }
+    DYN_STATIC void Warning(const std::string &message,
+                            const std::string_view &file = MakeRelative(__builtin_FILE()),
+                            int line = __builtin_LINE(),
+                            const std::string &function = __builtin_FUNCTION()) {
+        Log(WARNING, message, file, line, function);
+    }
 
-    void Info(const std::string &message,
-              const std::string_view &file = MakeRelative(__builtin_FILE()),
-              int line = __builtin_LINE(),
-              const std::string &function = __builtin_FUNCTION()) { this->Log(INFO, message, file, line, function); }
+    DYN_STATIC void Info(const std::string &message,
+                         const std::string_view &file = MakeRelative(__builtin_FILE()),
+                         int line = __builtin_LINE(),
+                         const std::string &function = __builtin_FUNCTION()) {
+        Log(INFO, message, file, line, function);
+    }
 
-    void Debug(const std::string &message,
-               const std::string_view &file = MakeRelative(__builtin_FILE()),
-               int line = __builtin_LINE(),
-               const std::string &function = __builtin_FUNCTION()) { this->Log(DEBUG, message, file, line, function); }
+    DYN_STATIC void Debug(const std::string &message,
+                          const std::string_view &file = MakeRelative(__builtin_FILE()),
+                          int line = __builtin_LINE(),
+                          const std::string &function = __builtin_FUNCTION()) {
+        Log(DEBUG, message, file, line, function);
+    }
 
     /**
      * Set layout to a string. You can use certain codes to show different information.
@@ -98,24 +107,29 @@ public:
      * - s (Second): shows the current second
      * i (Information): shows the actual message
      */
-    inline void SetLayout(std::string new_layout);
+    DYN_STATIC void SetLayout(std::string new_layout);
 
     /// Set the logging type to type. It is used to determine which messages are shown and which don't.
-    inline void SetLoggingType(LOGGING_TYPE type);
+    DYN_STATIC void SetLoggingType(LOGGING_TYPE type);
 
     /// Get the name of this logger
-    inline std::string GetName();
+    DYN_STATIC std::string GetName();
+
+    #ifdef SINGLE_LOGGER
+    /// Set the name of this logger
+    DYN_STATIC void SetName(std::string new_name);
+    #endif
 };
 
-Logger::Logger(std::string n)
-    : name(std::move(n)) {
-}
-
-void Logger::Log(LOGGING_TYPE type, const std::string &message, const std::string_view &file, int line, const std::string &function) {
-    if (type > this->currentType)
+void Logger::Log(LOGGING_TYPE type,
+                 const std::string &message,
+                 const std::string_view &file,
+                 int line,
+                 const std::string &function) {
+    if (type > currentType)
         return;
     std::string outp;
-    const char *fmt = this->layout.c_str();
+    const char *fmt = layout.c_str();
 
     // Get the time
     time_t now = time(nullptr);
@@ -148,38 +162,30 @@ void Logger::Log(LOGGING_TYPE type, const std::string &message, const std::strin
 }
 
 void Logger::SetLayout(std::string new_layout) {
-    this->layout = std::move(new_layout);
+    layout = std::move(new_layout);
 }
 
 void Logger::SetLoggingType(LOGGING_TYPE type) {
-    this->currentType = type;
+    currentType = type;
 }
 
 std::string Logger::GetName() {
-    return this->name;
+    return name;
 }
 
+#ifdef SINGLE_LOGGER
+void Logger::SetName(std::string new_name) {
+    name = std::move(new_name);
+}
+#else
 Logger *Logger::GetLogger(const std::string &name) {
-    for (auto *logger: Logger::loggers) {
-        if (logger->GetName() == name)
-            return logger;
-    }
+    if (loggers.count(name) > 0)
+        return loggers.at(name);
     auto *l = new Logger(name);
-    loggers.push_back(l);
+    loggers.emplace(name, l);
     return l;
 }
-
-bool Logger::DeleteLogger(const std::string &name) {
-    std::vector<Logger *>::iterator i;
-    for (i = loggers.begin(); i < loggers.end(); i++) {
-        if ((*i)->GetName() == name) {
-            delete *i;
-            loggers.erase(i);
-            return true;
-        }
-    }
-    return false;
-}
+#endif
 } // logging
 
 #endif /*LOGGER_H*/
