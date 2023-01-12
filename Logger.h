@@ -20,7 +20,7 @@
 
 namespace logging {
 typedef enum {
-    ERROR, WARNING, INFO, DEBUG
+    NONE, ERROR, WARNING, INFO, DEBUG
 } LOGGING_TYPE;
 
 // This is very naive, but seems to work fine
