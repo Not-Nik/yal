@@ -19,12 +19,6 @@
 #endif
 #endif
 
-#ifdef SINGLE_LOGGER
-#define DYN_STATIC static inline
-#else
-#define DYN_STATIC
-#endif
-
 namespace logging {
 typedef enum {
     NONE, ERROR, WARNING, INFO, DEBUG, ALL
@@ -42,51 +36,41 @@ typedef enum {
 }
 
 class Logger {
-    static inline std::unordered_map<std::string, Logger *> loggers;
-
-    DYN_STATIC std::string name;
-    DYN_STATIC std::string layout = "[%l] %n: %h:%m:%s - %p:%c (%f) - %i";
-    DYN_STATIC LOGGING_TYPE currentType = INFO;
+    static inline std::string name;
+    static inline std::string layout = "[%l] %n: %h:%m:%s - %p:%c (%f) - %i";
+    static inline LOGGING_TYPE currentType = INFO;
 public:
-    #ifndef SINGLE_LOGGER
-    /// Default constructor
-    explicit Logger(std::string n)
-        : name(std::move(n)) {}
-
-    /// Dynamic constructor
-    static Logger *GetLogger(const std::string &name);
-    #endif
 
     /// Display message formatted with layout if current level is equals or larger than type
-    DYN_STATIC void Log(LOGGING_TYPE type,
+    static inline void Log(LOGGING_TYPE type,
                         const std::string &message,
                         const std::string_view &file = MakeRelative(__builtin_FILE()),
                         int line = __builtin_LINE(),
                         const std::string &function = __builtin_FUNCTION());
 
     // Functions wrapping the log() function
-    DYN_STATIC void Error(const std::string &message,
+    static inline void Error(const std::string &message,
                           const std::string_view &file = MakeRelative(__builtin_FILE()),
                           int line = __builtin_LINE(),
                           const std::string &function = __builtin_FUNCTION()) {
         Log(ERROR, message, file, line, function);
     }
 
-    DYN_STATIC void Warning(const std::string &message,
+    static inline void Warning(const std::string &message,
                             const std::string_view &file = MakeRelative(__builtin_FILE()),
                             int line = __builtin_LINE(),
                             const std::string &function = __builtin_FUNCTION()) {
         Log(WARNING, message, file, line, function);
     }
 
-    DYN_STATIC void Info(const std::string &message,
+    static inline void Info(const std::string &message,
                          const std::string_view &file = MakeRelative(__builtin_FILE()),
                          int line = __builtin_LINE(),
                          const std::string &function = __builtin_FUNCTION()) {
         Log(INFO, message, file, line, function);
     }
 
-    DYN_STATIC void Debug(const std::string &message,
+    static inline void Debug(const std::string &message,
                           const std::string_view &file = MakeRelative(__builtin_FILE()),
                           int line = __builtin_LINE(),
                           const std::string &function = __builtin_FUNCTION()) {
@@ -107,18 +91,16 @@ public:
      * - s (Second): shows the current second
      * i (Information): shows the actual message
      */
-    DYN_STATIC void SetLayout(std::string new_layout);
+    static inline void SetLayout(std::string new_layout);
 
     /// Set the logging type to type. It is used to determine which messages are shown and which don't.
-    DYN_STATIC void SetLoggingType(LOGGING_TYPE type);
+    static inline void SetLoggingType(LOGGING_TYPE type);
 
     /// Get the name of this logger
-    DYN_STATIC std::string GetName();
+    static inline std::string GetName();
 
-    #ifdef SINGLE_LOGGER
     /// Set the name of this logger
-    DYN_STATIC void SetName(std::string new_name);
-    #endif
+    static inline void SetName(std::string new_name);
 };
 
 void Logger::Log(LOGGING_TYPE type,
@@ -173,19 +155,9 @@ std::string Logger::GetName() {
     return name;
 }
 
-#ifdef SINGLE_LOGGER
 void Logger::SetName(std::string new_name) {
     name = std::move(new_name);
 }
-#else
-Logger *Logger::GetLogger(const std::string &name) {
-    if (loggers.count(name) > 0)
-        return loggers.at(name);
-    auto *l = new Logger(name);
-    loggers.emplace(name, l);
-    return l;
-}
-#endif
 } // logging
 
 #endif /*LOGGER_H*/

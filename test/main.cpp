@@ -5,11 +5,9 @@
 using namespace logging;
 
 int main() {
-    Logger *logger = Logger::GetLogger("MyLogger");
-    logger->SetLoggingType(DEBUG);
-    logger->Debug("Debug");
-    logger->Info("Info");
-    logger->Warning("Warning");
-    logger->Error("Error");
-    //Logger::DeleteLogger("MyLogger");
+    Logger::SetLoggingType(DEBUG);
+    Logger::Debug("Debug");
+    Logger::Info("Info");
+    Logger::Warning("Warning");
+    Logger::Error("Error");
 }
