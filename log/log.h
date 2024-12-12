@@ -89,11 +89,12 @@ public:
      * - h (Hour): shows the current hour
      * - m (Minute): shows the current minute
      * - s (Second): shows the current second
+     * - t (Relative time): shows the time in seconds since the process started
      * i (Information): shows the actual message
      */
     static inline void SetLayout(std::string new_layout);
 
-    /// Set the logging type to type. It is used to determine which messages are shown and which don't.
+    /// Set the logging type to type. It is used to determine which messages are shown and which aren't.
     static inline void SetLoggingType(LOGGING_TYPE type);
 
     /// Get the name of this logger
@@ -123,6 +124,7 @@ void Logger::Log(LOGGING_TYPE type,
             if (*fmt == 'h') std::cout << std::setw(2) << std::setfill('0') << time->tm_hour;
             else if (*fmt == 'm') std::cout << std::setw(2) << std::setfill('0') << time->tm_min;
             else if (*fmt == 's') std::cout << std::setw(2) << std::setfill('0') << time->tm_sec;
+            else if (*fmt == 't') std::cout << static_cast<float>(clock()) / static_cast<float>(CLOCKS_PER_SEC);
             else if (*fmt == 'i') std::cout << message;
             else if (*fmt == 'p') std::cout << file;
             else if (*fmt == 'c') std::cout << line;
